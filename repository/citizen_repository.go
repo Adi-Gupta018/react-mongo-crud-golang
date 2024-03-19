@@ -7,57 +7,57 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// GetCitizens retrieves all citizens from the database
-func (cr *CitizenRepository) GetCitizens(ctx context.Context) ([]Citizen, error) {
-	var citizens []Citizen
+// GetUsers retrieves all users from the database
+func (cr *CitizenRepository) GetUsers(ctx context.Context) ([]User, error) { // Change function signature
+	var users []User // Change variable type
 	cursor, err := cr.collection.Find(ctx, bson.D{})
 	if err != nil {
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
-		var citizen Citizen
-		if err := cursor.Decode(&citizen); err != nil {
+		var user User // Change variable type
+		if err := cursor.Decode(&user); err != nil {
 			return nil, err
 		}
-		citizens = append(citizens, citizen)
+		users = append(users, user)
 	}
-	return citizens, nil
+	return users, nil
 }
 
-// GetCitizen retrieves a citizen by their ID from the database
-func (cr *CitizenRepository) GetCitizen(ctx context.Context, id string) (Citizen, error) {
-	var citizen Citizen
-	err := cr.collection.FindOne(ctx, bson.D{{Key: "_id", Value: id}}).Decode(&citizen)
+// GetUser retrieves a user by their ID from the database
+func (cr *CitizenRepository) GetUser(ctx context.Context, id string) (User, error) { // Change function signature
+	var user User // Change variable type
+	err := cr.collection.FindOne(ctx, bson.D{{Key: "_id", Value: id}}).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return Citizen{}, ErrCitizenNotFound
+			return User{}, ErrUserNotFound // Update error
 		}
-		return Citizen{}, err
+		return User{}, err
 	}
-	return citizen, nil
+	return user, nil
 }
 
-// CreateCitizen creates a new citizen in the database
-func (cr *CitizenRepository) CreateCitizen(ctx context.Context, citizen Citizen) (Citizen, error) {
-	_, err := cr.collection.InsertOne(ctx, citizen)
+// CreateUser creates a new user in the database
+func (cr *CitizenRepository) CreateUser(ctx context.Context, user User) (User, error) { // Change function signature and parameter type
+	_, err := cr.collection.InsertOne(ctx, user)
 	if err != nil {
-		return Citizen{}, err
+		return User{}, err
 	}
-	return citizen, nil
+	return user, nil
 }
 
-// UpdateCitizen updates an existing citizen in the database
-func (cr *CitizenRepository) UpdateCitizen(ctx context.Context, citizen Citizen) (Citizen, error) {
-	_, err := cr.collection.ReplaceOne(ctx, bson.D{{Key: "_id", Value: citizen.ID}}, citizen)
+// UpdateUser updates an existing user in the database
+func (cr *CitizenRepository) UpdateUser(ctx context.Context, user User) (User, error) { // Change function signature and parameter type
+	_, err := cr.collection.ReplaceOne(ctx, bson.D{{Key: "_id", Value: user.ID}}, user)
 	if err != nil {
-		return Citizen{}, err
+		return User{}, err
 	}
-	return citizen, nil
+	return user, nil
 }
 
-// DeleteCitizen deletes a citizen by their ID from the database
-func (cr *CitizenRepository) DeleteCitizen(ctx context.Context, id string) error {
+// DeleteUser deletes a user by their ID from the database
+func (cr *CitizenRepository) DeleteUser(ctx context.Context, id string) error {
 	_, err := cr.collection.DeleteOne(ctx, bson.D{{Key: "_id", Value: id}})
 	if err != nil {
 		return err

@@ -8,10 +8,10 @@ import (
 )
 
 // ErrCitizenNotFound represents the error when a citizen is not found in the database
-var ErrCitizenNotFound = errors.New("citizen not found")
+var ErrUserNotFound = errors.New("citizen not found")
 
 // Citizen represents the structure of a citizen entity
-type Citizen struct {
+type User struct {
 	ID          string `json:"id,omitempty" bson:"_id,omitempty"`
 	FirstName   string `json:"firstName,omitempty" bson:"firstName,omitempty"`
 	LastName    string `json:"lastName,omitempty" bson:"lastName,omitempty"`
@@ -25,10 +25,10 @@ type Citizen struct {
 
 // Repository represents the interface for managing citizen data
 type Repository interface {
-	GetCitizens(ctx context.Context) ([]Citizen, error)
-	GetCitizen(ctx context.Context, id string) (Citizen, error)
-	CreateCitizen(ctx context.Context, citizen Citizen) (Citizen, error)
-	UpdateCitizen(ctx context.Context, citizen Citizen) (Citizen, error)
+	GetCitizens(ctx context.Context) ([]User, error)
+	GetCitizen(ctx context.Context, id string) (User, error)
+	CreateCitizen(ctx context.Context, citizen User) (User, error)
+	UpdateCitizen(ctx context.Context, citizen User) (User, error)
 	DeleteCitizen(ctx context.Context, id string) error
 }
 
