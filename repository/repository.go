@@ -4,40 +4,105 @@ import (
 	"context"
 	"errors"
 
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/Adi-Gupta018/react-mongo-crud-golang/model"
 )
 
-// ErrCitizenNotFound represents the error when a citizen is not found in the database
-var ErrUserNotFound = errors.New("citizen not found")
+var (
+	ErrCitizenNotFound = errors.New("citizen not found")
+)
 
-// Citizen represents the structure of a citizen entity
-type User struct {
-	ID          string `json:"id,omitempty" bson:"_id,omitempty"`
-	FirstName   string `json:"firstName,omitempty" bson:"firstName,omitempty"`
-	LastName    string `json:"lastName,omitempty" bson:"lastName,omitempty"`
-	DateOfBirth string `json:"dateOfBirth,omitempty" bson:"dateOfBirth,omitempty"`
-	Gender      string `json:"gender,omitempty" bson:"gender,omitempty"`
-	Address     string `json:"address,omitempty" bson:"address,omitempty"`
-	City        string `json:"city,omitempty" bson:"city,omitempty"`
-	State       string `json:"state,omitempty" bson:"state,omitempty"`
-	Pincode     string `json:"pincode,omitempty" bson:"pincode,omitempty"`
+type repository struct {
+	db *mongo.Database
 }
 
-// Repository represents the interface for managing citizen data
-type Repository interface {
-	GetCitizens(ctx context.Context) ([]User, error)
-	GetCitizen(ctx context.Context, id string) (User, error)
-	CreateCitizen(ctx context.Context, citizen User) (User, error)
-	UpdateCitizen(ctx context.Context, citizen User) (User, error)
-	DeleteCitizen(ctx context.Context, id string) error
+func NewRepository(db *mongo.Database) Repository {
+	return &repository{db: db}
 }
 
-// CitizenRepository represents the repository for managing citizen data
-type CitizenRepository struct {
-	collection *mongo.Collection
+func (r *repository) GetCitizen(ctx context.Context, id string) (model.Citizen, error) {
+	var out model.Citizen
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return model.Citizen{}, err
+	}
+	err = r.db.
+		Collection("citizens").
+		FindOne(ctx, bson.M{"_id": objectID}).
+		Decode(&out)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return model.Citizen{}, ErrCitizenNotFound
+		}
+		return model.Citizen{}, err
+	}
+	return out, nil
 }
 
-// NewCitizenRepository creates a new instance of CitizenRepository
-func NewCitizenRepository(collection *mongo.Collection) *CitizenRepository {
-	return &CitizenRepository{collection: collection}
+func (r *repository) GetAllCitizens(ctx context.Context) ([]model.Citizen, error) {
+	cursor, err := r.db.
+		Collection("citizens").
+		Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var citizens []model.Citizen
+	for cursor.Next(ctx) {
+		var citizen model.Citizen
+		if err := cursor.Decode(&citizen); err != nil {
+			return nil, err
+		}
+		citizens = append(citizens, citizen)
+	}
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+	return citizens, nil
+}
+
+func (r *repository) CreateCitizen(ctx context.Context, citizen model.Citizen) (model.Citizen, error) {
+	citizen.ID = primitive.NewObjectID().Hex()
+	_, err := r.db.
+		Collection("citizens").
+		InsertOne(ctx, citizen)
+	if err != nil {
+		return model.Citizen{}, err
+	}
+	return citizen, nil
+}
+
+func (r *repository) UpdateCitizen(ctx context.Context, citizen model.Citizen) (model.Citizen, error) {
+	objectID, err := primitive.ObjectIDFromHex(citizen.ID)
+	if err != nil {
+		return model.Citizen{}, err
+	}
+	_, err = r.db.
+		Collection("citizens").
+		UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": citizen})
+	if err != nil {
+		return model.Citizen{}, err
+	}
+	return citizen, nil
+}
+
+func (r *repository) DeleteCitizen(ctx context.Context, id string) error {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	result, err := r.db.
+		Collection("citizens").
+		DeleteOne(ctx, bson.M{"_id": objectID})
+	if err != nil {
+		return err
+	}
+	if result.DeletedCount == 0 {
+		return ErrCitizenNotFound
+	}
+	return nil
 }
