@@ -1,6 +1,6 @@
 package model
 
-type Citizen struct {
+type User struct {
 	ID          string `json:"id"`
 	FirstName   string `json:"firstName"`
 	LastName    string `json:"lastName"`
