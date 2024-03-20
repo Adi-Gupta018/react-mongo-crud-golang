@@ -38,7 +38,7 @@ func main() {
 }
 
 func db() *mongo.Client {
-	clientOptions := options.Client().ApplyURI("mongodb+srv://Demo03:Demomongo03@demo.antwhfs.mongodb.net/citizen?retryWrites=true&w=majority ")
+	clientOptions := options.Client().ApplyURI("mongodb+srv://Demo03:Demomongo03@demo.antwhfs.mongodb.net/?retryWrites=true&w=majority&appName=Demo")
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {

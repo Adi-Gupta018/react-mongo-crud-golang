@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/Adi-Gupta018/react-mongo-crud-golang/model"
 	"github.com/Adi-Gupta018/react-mongo-crud-golang/repository"
@@ -24,7 +25,8 @@ func (s *Server) GetCitizen(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid argument id"})
 		return
 	}
-	citizen, err := s.repository.GetCitizen(ctx, id)
+	ObjectID, err := primitive.ObjectIDFromHex(id)
+	citizen, err := s.repository.GetCitizen(ctx, ObjectID)
 	if err != nil {
 		if errors.Is(err, repository.ErrCitizenNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -65,12 +67,13 @@ func (s *Server) UpdateCitizen(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid argument id"})
 		return
 	}
+	ObjectID, _ := primitive.ObjectIDFromHex(id)
 	var citizen model.Citizen
 	if err := ctx.ShouldBindJSON(&citizen); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 		return
 	}
-	citizen.ID = id
+	citizen.ID = ObjectID
 	citizen, err := s.repository.UpdateCitizen(ctx, citizen)
 	if err != nil {
 		if errors.Is(err, repository.ErrCitizenNotFound) {
@@ -89,7 +92,8 @@ func (s *Server) DeleteCitizen(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid argument id"})
 		return
 	}
-	if err := s.repository.DeleteCitizen(ctx, id); err != nil {
+	ObjectID, _ := primitive.ObjectIDFromHex(id)
+	if err := s.repository.DeleteCitizen(ctx, ObjectID); err != nil {
 		if errors.Is(err, repository.ErrCitizenNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return

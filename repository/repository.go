@@ -23,15 +23,11 @@ func NewRepository(db *mongo.Database) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) GetCitizen(ctx context.Context, id string) (model.Citizen, error) {
+func (r *repository) GetCitizen(ctx context.Context, id primitive.ObjectID) (model.Citizen, error) {
 	var out model.Citizen
-	objectID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return model.Citizen{}, err
-	}
-	err = r.db.
+	err := r.db.
 		Collection("citizens").
-		FindOne(ctx, bson.M{"_id": objectID}).
+		FindOne(ctx, bson.M{"_id": id}).
 		Decode(&out)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -66,7 +62,7 @@ func (r *repository) GetAllCitizens(ctx context.Context) ([]model.Citizen, error
 }
 
 func (r *repository) CreateCitizen(ctx context.Context, citizen model.Citizen) (model.Citizen, error) {
-	citizen.ID = primitive.NewObjectID().Hex()
+	citizen.ID = primitive.NewObjectID()
 	_, err := r.db.
 		Collection("citizens").
 		InsertOne(ctx, citizen)
@@ -77,11 +73,8 @@ func (r *repository) CreateCitizen(ctx context.Context, citizen model.Citizen) (
 }
 
 func (r *repository) UpdateCitizen(ctx context.Context, citizen model.Citizen) (model.Citizen, error) {
-	objectID, err := primitive.ObjectIDFromHex(citizen.ID)
-	if err != nil {
-		return model.Citizen{}, err
-	}
-	_, err = r.db.
+	objectID := citizen.ID
+	_, err := r.db.
 		Collection("citizens").
 		UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": citizen})
 	if err != nil {
@@ -90,14 +83,10 @@ func (r *repository) UpdateCitizen(ctx context.Context, citizen model.Citizen) (
 	return citizen, nil
 }
 
-func (r *repository) DeleteCitizen(ctx context.Context, id string) error {
-	objectID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return err
-	}
+func (r *repository) DeleteCitizen(ctx context.Context, id primitive.ObjectID) error {
 	result, err := r.db.
 		Collection("citizens").
-		DeleteOne(ctx, bson.M{"_id": objectID})
+		DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
 		return err
 	}
