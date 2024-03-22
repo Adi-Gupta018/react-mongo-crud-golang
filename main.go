@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	cors "github.com/itsjamie/gin-cors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -25,12 +27,28 @@ func main() {
 
 	// Create a Gin router
 	router := gin.Default()
+
+	router.Use(cors.Middleware(cors.Config{
+		Origins:         "*",
+		Methods:         "GET, PUT, POST, DELETE",
+		RequestHeaders:  "Origin, Authorization, Content-Type",
+		ExposedHeaders:  "",
+		MaxAge:          50 * time.Second,
+		Credentials:     false,
+		ValidateHeaders: false,
+	}))
+
 	{
 		router.GET("/citizens/:id", server.GetCitizen)
+		router.GET("/citizens/:id/", server.GetCitizen)
 		router.GET("/citizens", server.GetAllCitizens) // New route added for getting all citizens
+		router.GET("/citizens/", server.GetAllCitizens)
 		router.POST("/citizens", server.CreateCitizen)
+		router.POST("/citizens/", server.CreateCitizen)
 		router.PUT("/citizens/:id", server.UpdateCitizen)
+		router.PUT("/citizens/:id/", server.UpdateCitizen)
 		router.DELETE("/citizens/:id", server.DeleteCitizen)
+		router.DELETE("/citizens/:id/", server.DeleteCitizen)
 	}
 
 	// Start the router
