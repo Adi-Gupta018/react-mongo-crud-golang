@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -10,12 +11,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/joho/godotenv"
+
 	"github.com/Adi-Gupta018/react-mongo-crud-golang/http"
 	"github.com/Adi-Gupta018/react-mongo-crud-golang/repository"
 )
 
 func main() {
 	// Create a MongoDB client
+
 	client := db()
 	defer client.Disconnect(context.TODO())
 
@@ -56,7 +60,13 @@ func main() {
 }
 
 func db() *mongo.Client {
-	clientOptions := options.Client().ApplyURI("mongodb+srv://Demo03:Demomongo03@demo.antwhfs.mongodb.net/?retryWrites=true&w=majority&appName=Demo")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Env file error")
+	}
+	var conn_url string
+	conn_url = os.Getenv("MONGO_URL")
+	clientOptions := options.Client().ApplyURI(conn_url)
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
