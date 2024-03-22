@@ -64,8 +64,7 @@ func db() *mongo.Client {
 	if err != nil {
 		log.Fatal("Env file error")
 	}
-	var conn_url string
-	conn_url = os.Getenv("MONGO_URL")
+	var conn_url = os.Getenv("MONGO_URL")
 	clientOptions := options.Client().ApplyURI(conn_url)
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
