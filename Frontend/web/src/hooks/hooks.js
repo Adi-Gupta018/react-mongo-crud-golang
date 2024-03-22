@@ -44,7 +44,6 @@ function useCreateUser() {
           throw new Error('Failed to fetch users');
         }
         const data = await response.json();
-        console.log(data);
         return data.citizens; // Assuming the response has a "citizens" array
       },
       refetchOnWindowFocus: false,
@@ -57,7 +56,6 @@ function useCreateUser() {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (user) => {
-        console.log("user",user);
         const response = await fetch(`http://localhost:9080/citizens/${user.id}`, {
           method: 'PUT',
           headers: {
@@ -68,7 +66,6 @@ function useCreateUser() {
         if (!response.ok) {
           throw new Error('Failed to update user');
         }
-        console.log("response",response);
         return response.json();
       },
       onMutate: async (updatedUserInfo) => {
