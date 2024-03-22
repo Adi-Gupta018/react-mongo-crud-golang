@@ -1,6 +1,8 @@
 # React-Mongo-Crud-Golang
 
 This project is a full-stack web application built with Golang and React. The backend utilizes Golang and the Gin framework for a RESTful API that interacts with a MongoDB database. The frontend is built with React using Create React App, providing a user interface for CRUD (Create, Read, Update, Delete) operations on citizen data.
+![image](https://github.com/Adi-Gupta018/react-mongo-crud-golang/assets/94818088/f8fe2c15-afe2-4085-b09d-9c5e3d9aef22)
+
 
 ## Tech Stack
 
